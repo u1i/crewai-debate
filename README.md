@@ -57,6 +57,7 @@ All models use the `OpenAICompletion` provider via OpenRouter's OpenAI-compatibl
    
    - **Optional (with defaults):**
      - `MAX_DEBATE_ROUNDS` - Maximum rounds (default: 5)
+     - `OTEL_SDK_DISABLED` - Set to `true` to disable CrewAI telemetry (recommended for privacy)
      - `PROPONENT_MODEL` - Model for Proponent (default: `openai/gpt-5.1`)
      - `OPPONENT_MODEL` - Model for Opponent (default: `anthropic/claude-sonnet-4.5`)
      - `MODERATOR_MODEL` - Model for Moderator (default: `google/gemini-2.5-pro`)
@@ -71,6 +72,17 @@ All models use the `OpenAICompletion` provider via OpenRouter's OpenAI-compatibl
      - `MODERATOR_BACKSTORY` - Agent backstory/personality
    
    See `.env.template` for full configuration options and defaults.
+
+## Privacy
+
+**Important:** CrewAI has telemetry enabled by default and sends trace data (including your debate content and agent interactions) to their cloud service at `app.crewai.com`.
+
+To disable telemetry and keep your debates private, ensure this line is in your `.env` file:
+```bash
+OTEL_SDK_DISABLED=true
+```
+
+This is already included in `.env.template` for your convenience.
 
 ## Usage
 
