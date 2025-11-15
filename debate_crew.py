@@ -2,9 +2,9 @@
 CrewAI Example: Role-Based Debate with Multiple LLMs via OpenRouter
 
 This example demonstrates three agents engaging in a moderator-controlled debate:
-- Proponent (GPT-4o): Builds strong arguments and defends position
-- Opponent (Claude Sonnet 3.5): Critiques arguments and presents counterarguments
-- Moderator (Gemini 2.0 Flash): Decides when debate is complete, then synthesizes final summary
+- Proponent (GPT-5.1): Builds strong arguments and defends position
+- Opponent (Claude Sonnet 4.5): Critiques arguments and presents counterarguments
+- Moderator (Gemini 2.5 Pro): Decides when debate is complete, then synthesizes final summary
 
 The debate flow:
 1. Proponent makes an opening argument
