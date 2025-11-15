@@ -1,10 +1,8 @@
 """
 CrewAI Example: Role-Based Debate with Multiple LLMs via OpenRouter
 
-This example demonstrates three agents engaging in a moderator-controlled debate:
-- Proponent (GPT-5.1): Builds strong arguments and defends position
-- Opponent (Claude Sonnet 4.5): Critiques arguments and presents counterarguments
-- Moderator (Gemini 2.5 Pro): Decides when debate is complete, then synthesizes final summary
+This example demonstrates three agents engaging in a moderator-controlled debate.
+All agent configurations (models, roles, goals, backstories) are loaded from .env file.
 
 The debate flow:
 1. Proponent makes an opening argument
@@ -14,7 +12,10 @@ The debate flow:
 5. Continues until Moderator says DONE or MAX_ROUNDS (from .env) is reached
 6. Moderator provides final comprehensive summary
 
-Note: You can modify the models to use GPT-5 or Gemini 2.5 Pro when available.
+Configuration:
+- Copy .env.template to .env
+- Set your OPENROUTER_API_KEY
+- Customize models and agent prompts as needed
 """
 
 import os
@@ -37,6 +38,53 @@ MAX_ROUNDS = int(os.getenv("MAX_DEBATE_ROUNDS", "5"))
 
 # OpenRouter base URL
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+# LLM Model Configuration
+PROPONENT_MODEL = os.getenv("PROPONENT_MODEL", "openai/gpt-5.1")
+OPPONENT_MODEL = os.getenv("OPPONENT_MODEL", "anthropic/claude-sonnet-4.5")
+MODERATOR_MODEL = os.getenv("MODERATOR_MODEL", "google/gemini-2.5-pro")
+
+# Agent Configuration - Proponent
+PROPONENT_ROLE = os.getenv("PROPONENT_ROLE", "Proponent")
+PROPONENT_GOAL = os.getenv(
+    "PROPONENT_GOAL",
+    "Build the strongest possible argument for the given topic. Use logical reasoning, evidence, and persuasive techniques to construct a compelling case."
+)
+PROPONENT_BACKSTORY = os.getenv(
+    "PROPONENT_BACKSTORY",
+    """You are a skilled debater and advocate with expertise in constructing 
+    well-reasoned arguments. Your goal is to present the most convincing case possible, 
+    using facts, logic, and rhetorical techniques to support your position."""
+)
+
+# Agent Configuration - Opponent
+OPPONENT_ROLE = os.getenv("OPPONENT_ROLE", "Opponent")
+OPPONENT_GOAL = os.getenv(
+    "OPPONENT_GOAL",
+    "Find every flaw, logical fallacy, and weak point in the Proponent's argument. Challenge assumptions, identify gaps, and expose weaknesses."
+)
+OPPONENT_BACKSTORY = os.getenv(
+    "OPPONENT_BACKSTORY",
+    """You are a critical thinker and skilled critic with a keen eye for 
+    identifying logical fallacies, weak reasoning, and unsupported claims. Your role 
+    is to rigorously examine arguments and expose their vulnerabilities."""
+)
+
+# Agent Configuration - Moderator
+MODERATOR_ROLE = os.getenv("MODERATOR_ROLE", "Moderator")
+MODERATOR_GOAL = os.getenv(
+    "MODERATOR_GOAL",
+    "Monitor the debate quality and decide when sufficient discussion has occurred. Then provide a balanced, comprehensive summary."
+)
+MODERATOR_BACKSTORY = os.getenv(
+    "MODERATOR_BACKSTORY",
+    """You are an impartial moderator with expertise in managing debates and 
+    synthesizing complex discussions. Your role is to:
+    1. Evaluate after each round whether the debate has reached sufficient depth and resolution
+    2. Decide if more rounds are needed or if the debate is complete
+    3. Provide a fair, balanced summary that captures the key points, strengths, and 
+       weaknesses of each position when the debate concludes."""
+)
 
 # Setup logging
 def setup_logging(topic: str):
@@ -122,27 +170,21 @@ def write_conversation_entry(log_filename: str, round_num: int, agent_role: str,
 
 
 def create_proponent_agent():
-    """Create the Proponent agent using GPT-5.1 via OpenRouter.
-    
-    To use GPT-5 when available, change the model to: "openai/gpt-5"
-    """
-    # Use native OpenAI provider directly with OpenRouter
+    """Create the Proponent agent using configured model via OpenRouter."""
     proponent_llm = OpenAICompletion(
-        model="openai/gpt-5.1",
+        model=PROPONENT_MODEL,
         base_url=OPENROUTER_BASE_URL,
         api_key=OPENROUTER_API_KEY,
         default_headers={
-            "HTTP-Referer": "https://github.com/your-repo",
+            "HTTP-Referer": "",
             "X-Title": "CrewAI Debate Example"
         }
     )
     
     return Agent(
-        role="Proponent",
-        goal="Build the strongest possible argument for the given topic. Use logical reasoning, evidence, and persuasive techniques to construct a compelling case.",
-        backstory="""You are a skilled debater and advocate with expertise in constructing 
-        well-reasoned arguments. Your goal is to present the most convincing case possible, 
-        using facts, logic, and rhetorical techniques to support your position.""",
+        role=PROPONENT_ROLE,
+        goal=PROPONENT_GOAL,
+        backstory=PROPONENT_BACKSTORY,
         verbose=True,
         allow_delegation=False,
         llm=proponent_llm
@@ -150,24 +192,21 @@ def create_proponent_agent():
 
 
 def create_opponent_agent():
-    """Create the Opponent agent using Claude Sonnet 4.5 via OpenRouter."""
-    # Use OpenAI provider (OpenRouter is OpenAI-compatible) for Claude model
+    """Create the Opponent agent using configured model via OpenRouter."""
     opponent_llm = OpenAICompletion(
-        model="anthropic/claude-sonnet-4.5",
+        model=OPPONENT_MODEL,
         base_url=OPENROUTER_BASE_URL,
         api_key=OPENROUTER_API_KEY,
         default_headers={
-            "HTTP-Referer": "https://github.com/your-repo",
+            "HTTP-Referer": "",
             "X-Title": "CrewAI Debate Example"
         }
     )
     
     return Agent(
-        role="Opponent",
-        goal="Find every flaw, logical fallacy, and weak point in the Proponent's argument. Challenge assumptions, identify gaps, and expose weaknesses.",
-        backstory="""You are a critical thinker and skilled critic with a keen eye for 
-        identifying logical fallacies, weak reasoning, and unsupported claims. Your role 
-        is to rigorously examine arguments and expose their vulnerabilities.""",
+        role=OPPONENT_ROLE,
+        goal=OPPONENT_GOAL,
+        backstory=OPPONENT_BACKSTORY,
         verbose=True,
         allow_delegation=False,
         llm=opponent_llm
@@ -175,27 +214,21 @@ def create_opponent_agent():
 
 
 def create_moderator_agent():
-    """Create the Moderator agent using Gemini 2.5 Pro via OpenRouter."""
-    # Use OpenAI provider (OpenRouter is OpenAI-compatible) for Gemini model
+    """Create the Moderator agent using configured model via OpenRouter."""
     moderator_llm = OpenAICompletion(
-        model="google/gemini-2.5-pro",
+        model=MODERATOR_MODEL,
         base_url=OPENROUTER_BASE_URL,
         api_key=OPENROUTER_API_KEY,
         default_headers={
-            "HTTP-Referer": "https://github.com/your-repo",
+            "HTTP-Referer": "",
             "X-Title": "CrewAI Debate Example"
         }
     )
     
     return Agent(
-        role="Moderator",
-        goal="Monitor the debate quality and decide when sufficient discussion has occurred. Then provide a balanced, comprehensive summary.",
-        backstory="""You are an impartial moderator with expertise in managing debates and 
-        synthesizing complex discussions. Your role is to:
-        1. Evaluate after each round whether the debate has reached sufficient depth and resolution
-        2. Decide if more rounds are needed or if the debate is complete
-        3. Provide a fair, balanced summary that captures the key points, strengths, and 
-           weaknesses of each position when the debate concludes.""",
+        role=MODERATOR_ROLE,
+        goal=MODERATOR_GOAL,
+        backstory=MODERATOR_BACKSTORY,
         verbose=True,
         allow_delegation=False,
         llm=moderator_llm

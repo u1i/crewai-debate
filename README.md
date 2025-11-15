@@ -12,23 +12,21 @@ A sophisticated debate system using CrewAI where three AI agents with different 
 
 ## Agents
 
-1. **Proponent** (GPT-5.1 via OpenRouter)
-   - Role: Arguer
-   - Goal: Build the strongest possible argument for the topic
-   - Model: `openai/gpt-5.1`
-   - Uses: OpenAICompletion provider
+All agents are fully configurable via the `.env` file:
 
-2. **Opponent** (Claude Sonnet 4.5 via OpenRouter)
-   - Role: Critic
-   - Goal: Find every flaw, logical fallacy, and weak point in the Proponent's argument
-   - Model: `anthropic/claude-sonnet-4.5`
-   - Uses: OpenAICompletion provider (OpenRouter-compatible)
+1. **Proponent** (Default: GPT-5.1 via OpenRouter)
+   - Builds strong arguments for the topic
+   - Configurable: Model, role, goal, and backstory
 
-3. **Moderator** (Gemini 2.5 Pro via OpenRouter)
-   - Role: Synthesizer & Judge
-   - Goal: Evaluate debate quality and decide when to end, then provide final summary
-   - Model: `google/gemini-2.5-pro`
-   - Uses: OpenAICompletion provider (OpenRouter-compatible)
+2. **Opponent** (Default: Claude Sonnet 4.5 via OpenRouter)
+   - Critiques arguments and finds weaknesses
+   - Configurable: Model, role, goal, and backstory
+
+3. **Moderator** (Default: Gemini 2.5 Pro via OpenRouter)
+   - Evaluates debate quality and provides final summary
+   - Configurable: Model, role, goal, and backstory
+
+All models use the `OpenAICompletion` provider via OpenRouter's OpenAI-compatible API.
 
 ## Setup
 
@@ -42,14 +40,37 @@ A sophisticated debate system using CrewAI where three AI agents with different 
    - Create an account and generate an API key
 
 3. **Configure environment:**
-   Create a `.env` file with:
-   ```
-   OPENROUTER_API_KEY=your_actual_api_key_here
-   MAX_DEBATE_ROUNDS=5
+   ```bash
+   # Copy the template to create your .env file
+   cp .env.template .env
    ```
    
-   - `OPENROUTER_API_KEY`: Your OpenRouter API key (required)
-   - `MAX_DEBATE_ROUNDS`: Maximum number of debate rounds allowed (default: 5, optional)
+   Then edit `.env` and set your API key:
+   ```bash
+   OPENROUTER_API_KEY=your_actual_api_key_here
+   ```
+   
+   **All configuration options in `.env`:**
+   
+   - **Required:**
+     - `OPENROUTER_API_KEY` - Your OpenRouter API key
+   
+   - **Optional (with defaults):**
+     - `MAX_DEBATE_ROUNDS` - Maximum rounds (default: 5)
+     - `PROPONENT_MODEL` - Model for Proponent (default: `openai/gpt-5.1`)
+     - `OPPONENT_MODEL` - Model for Opponent (default: `anthropic/claude-sonnet-4.5`)
+     - `MODERATOR_MODEL` - Model for Moderator (default: `google/gemini-2.5-pro`)
+     - `PROPONENT_ROLE` - Agent role name (default: "Proponent")
+     - `PROPONENT_GOAL` - Agent goal/objective
+     - `PROPONENT_BACKSTORY` - Agent backstory/personality
+     - `OPPONENT_ROLE` - Agent role name (default: "Opponent")
+     - `OPPONENT_GOAL` - Agent goal/objective
+     - `OPPONENT_BACKSTORY` - Agent backstory/personality
+     - `MODERATOR_ROLE` - Agent role name (default: "Moderator")
+     - `MODERATOR_GOAL` - Agent goal/objective
+     - `MODERATOR_BACKSTORY` - Agent backstory/personality
+   
+   See `.env.template` for full configuration options and defaults.
 
 ## Usage
 
@@ -118,28 +139,40 @@ Both logs are created automatically in the `logs/` directory.
 
 ## Model Configuration
 
-The example uses OpenRouter to access different models via OpenAI-compatible API:
+### Default Models
+
+The system uses OpenRouter to access different models via OpenAI-compatible API:
 - **GPT-5.1** for the Proponent (via `openai/gpt-5.1`)
 - **Claude Sonnet 4.5** for the Opponent (via `anthropic/claude-sonnet-4.5`)
 - **Gemini 2.5 Pro** for the Moderator (via `google/gemini-2.5-pro`)
 
 ### Customization
 
-To use different models, modify the `model` parameter in each agent's LLM configuration in `debate_crew.py`:
+To use different models, simply edit your `.env` file:
 
-```python
-# In create_proponent_agent():
-proponent_llm = OpenAICompletion(
-    model="openai/gpt-4o",  # Change model here
-    base_url=OPENROUTER_BASE_URL,
-    api_key=OPENROUTER_API_KEY,
-    ...
-)
+```bash
+# Example: Use different models
+PROPONENT_MODEL=openai/gpt-4o
+OPPONENT_MODEL=anthropic/claude-3.5-sonnet
+MODERATOR_MODEL=google/gemini-2.0-flash-thinking-exp
 ```
 
 Check available models at https://openrouter.ai/models
 
 **Note:** All models use the `OpenAICompletion` provider since OpenRouter provides an OpenAI-compatible API endpoint.
+
+### Customizing Agent Behavior
+
+You can also customize each agent's role, goal, and backstory in the `.env` file:
+
+```bash
+# Example: Customize the Proponent agent
+PROPONENT_ROLE=Advocate
+PROPONENT_GOAL=Present evidence-based arguments with scientific rigor
+PROPONENT_BACKSTORY=You are a research scientist with expertise in...
+```
+
+This allows you to tailor the debate style without modifying code.
 
 ## Project Structure
 
@@ -148,7 +181,8 @@ Check available models at https://openrouter.ai/models
 ├── debate_crew.py          # Main debate script
 ├── requirements.txt        # Python dependencies
 ├── README.md              # This file
-├── .env                   # Environment variables (create this)
+├── .env.template          # Environment template (copy to .env)
+├── .env                   # Your environment variables (create from template)
 ├── .gitignore            # Git ignore rules
 └── logs/                  # Generated log files (auto-created)
     ├── debate_*.log       # Technical logs
