@@ -78,7 +78,7 @@ All models use the `OpenAICompletion` provider via OpenRouter's OpenAI-compatibl
 
 Run the debate script with a topic as an argument:
 ```bash
-python debate_crew.py "Should artificial intelligence be regulated by governments?"
+python debate_crew.py "Artificial intelligence should be regulated by governments"
 ```
 
 Or run without arguments to be prompted for a topic:
@@ -88,10 +88,12 @@ python debate_crew.py
 
 ### Example Topics
 
-- "Should artificial intelligence be regulated by governments?"
-- "Is remote work better than office work?"
-- "Should social media platforms be held responsible for user content?"
-- "Is universal basic income necessary in an AI-driven economy?"
+- "Artificial intelligence should be regulated by governments"
+- "Remote work is better than office work"
+- "Social media platforms should be held responsible for user content"
+- "Universal basic income is necessary in an AI-driven economy"
+- "Individual freedom is more valuable than social harmony"
+- "Climate change requires immediate government intervention"
 
 ## How It Works
 
